@@ -1,18 +1,3 @@
-"""Estilo unificado de las figuras de la app.
-
-Fuente única de verdad: `aplicar_estilo()` (rcParams) más las constantes de
-color, colormap y tamaño de figura. Se importa igual desde cualquier carpeta
-porque la raíz del repo está en `sys.path`::
-
-    from estilo import aplicar_estilo, SIGNAL_COLOR, FIGSIZE_TESIS_1COL
-    aplicar_estilo()
-
-En scripts con celdas `#%%` conviene llamarlo también al inicio de cada celda
-que grafica: es idempotente y así re-correr una celda suelta no depende del
-orden de ejecución.
-
-Rojo para el signal y azul para el idler en todo el catálogo.
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
@@ -37,16 +22,10 @@ CMAP_ESPECTRAL = 'cividis'
 CMAP_ESPECTRAL_GRIS = LinearSegmentedColormap.from_list(
     'Greys_clip', plt.get_cmap('Greys')(np.linspace(0.30, 0.90, 256)))
 
+CMAP_DS9 = 'gray'
+
 
 def _extremo_a_blanco(base, frac, n=256):
-    """`base` con su extremo claro llevado a BLANCO puro.
-
-    Mezcla hacia el blanco sólo los primeros `frac` del rango. La fracción es un
-    compromiso: magma_r arranca en amarillo pálido y un panel entero de ese
-    amarillo pesa demasiado, pero mezclando de más se destiñen los valores bajos,
-    que en un mapa de phase matching son justo los lóbulos laterales que hay que
-    ver. Con 0.03 el cero sale blanco y los lóbulos conservan el color.
-    """
     colores = plt.get_cmap(base)(np.linspace(0, 1, n))
     k = max(int(frac * n), 1)
     peso = np.linspace(1.0, 0.0, k)[:, None]
@@ -64,13 +43,6 @@ ESCALA_TESIS = 0.70
 
 
 def figsize_tesis(ancho, alto, frac=1.0):
-    """(ancho, alto) llevados al tamaño de letra canónico del capítulo.
-
-    Se le pasan las proporciones que uno quiere (los mismos numeros de siempre) y
-    devuelve esa MISMA forma al ancho que corresponde para incluirla a `frac` veces
-    el ancho del texto. Escala ancho y alto por igual, así que el layout no cambia:
-    lo único que se mueve es el tamaño relativo del texto, que es el punto.
-    """
     ancho_final = frac * ANCHO_TEXTO / ESCALA_TESIS
     return (ancho_final, alto * ancho_final / ancho)
 
@@ -87,7 +59,7 @@ __all__ = [
     'ORDINARIO_COLOR', 'EXTRAORDINARIO_COLOR',
     'VIOLETA_OSCURO', 'VIOLETA_CLARO',
     'TURQUESA_OSCURO', 'TURQUESA_CLARO',
-    'CMAP_DENSIDAD', 'CMAP_ESPECTRAL', 'CMAP_ESPECTRAL_GRIS',
+    'CMAP_DENSIDAD', 'CMAP_ESPECTRAL', 'CMAP_ESPECTRAL_GRIS', 'CMAP_DS9',
     'CMAP_DENSIDAD_CLARO', 'CMAP_DENSIDAD_PUNTOS',
     'ANCHO_TEXTO', 'ESCALA_TESIS', 'figsize_tesis',
     'FIGSIZE_TESIS_1COL', 'FIGSIZE_TESIS_2COL',
@@ -96,12 +68,6 @@ __all__ = [
 
 
 def aplicar_estilo():
-    """Configura matplotlib con el estilo común. Idempotente.
-
-    Decisión: sans-serif tanto para la tesis como para el póster, aunque el
-    cuerpo de la tesis sea Computer Modern serif. Para matchear el cuerpo,
-    cambiar `font.family` a 'serif' y `mathtext.fontset` a 'cm'.
-    """
     plt.rcParams.update({
         'font.family': 'sans-serif',
         'font.sans-serif': ['DejaVu Sans', 'Arial', 'Helvetica'],

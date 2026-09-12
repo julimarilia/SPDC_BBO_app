@@ -12,13 +12,6 @@ from estilo import SIGNAL_COLOR, IDLER_COLOR
 
 
 def _guesses_iniciales(cut, lp, w, L, tipo):
-    """Puntos de arranque del minimizador para las dos ramas.
-
-    Tipo II conserva los valores calibrados a mano para cut = 43 grados, así la
-    figura sale idéntica. Tipo I vive en otros ángulos (el cono abre mucho más
-    rápido con el corte), así que se derivan resolviendo el caso degenerado: como
-    el tipo I es azimutalmente simétrico, la rama negativa es el espejo exacto.
-    """
     if tipo != 'I':
         return (np.array([3.4, 2.5]) * np.pi / 180,
                 np.array([-8.5, -6.3]) * np.pi / 180)
@@ -32,9 +25,6 @@ def _guesses_iniciales(cut, lp, w, L, tipo):
 
 
 def calcular_parabolas(cut, lp, phi_s, w, L, pasos=500, tipo='II'):
-    """Calcula las dos ramas (positiva y negativa) de los ángulos de emisión
-    signal/idler en función de la longitud de onda del signal.
-    Retorna (rango_ls, lami, ths1, thi1, ths2, thi2, pmf_max_1, pmf_max_2)."""
     rango_ls = np.linspace(950e-9, 745e-9, pasos)
     lami = 1 / (1/lp - 1/rango_ls)
 
@@ -73,10 +63,6 @@ def calcular_parabolas(cut, lp, phi_s, w, L, pasos=500, tipo='II'):
 
 
 def plot_parabolas_superpuestas(cut, lp, phi_s, w, L, pasos=500, tipo='II'):
-    """Parábolas de SPDC Tipo II: theta_s vs λ_s y theta_i vs λ_i, ambas
-    ramas superpuestas en el mismo gráfico. Retorna fig.
-    Cada fotón se grafica contra su propia λ, así las curvas se cruzan
-    en el degenerado (λ_s = λ_i = 810 nm)."""
     rango_ls, lami, ths1, thi1, ths2, thi2, _, _ = calcular_parabolas(cut, lp, phi_s, w, L, pasos)
 
     fig, ax = plt.subplots(figsize=(10, 7))

@@ -189,9 +189,6 @@ DPI_APP = 100
 
 
 def _extract_and_clear_main_title(fig):
-    """Si el fig tiene un suptitle o exactamente un ax con titulo, lo extrae
-    y lo borra. Retorna el texto o None. Los plots con multiples subtitulos
-    (p.ej. panel analitico vs simulacion) no se tocan: son labels de subplot."""
     suptitle = getattr(fig, "_suptitle", None)
     if suptitle is not None and suptitle.get_text():
         text = suptitle.get_text()
@@ -212,12 +209,6 @@ MAX_ENTRADAS_LEYENDA = 8
 
 
 def _leyenda_afuera(fig):
-    """Saca la leyenda de adentro del plot y devuelve sus entradas.
-
-    Devuelve una lista de (color, tipo, etiqueta) con tipo in {'linea', 'punto'},
-    para que la app la dibuje como texto debajo de la figura. Así el plot queda
-    limpio y la leyenda se lee al tamaño de la app, no al de la figura escalada.
-    """
     total = sum(len([e for e in ax.get_legend_handles_labels()[1]
                      if e and not e.startswith('_')])
                 for ax in fig.get_axes())
@@ -261,7 +252,6 @@ _SUB = {'s': 'ₛ', 'i': 'ᵢ', 'x': 'ₓ', 'y': 'ᵧ', 'p': 'ₚ', '0': '₀',
 
 
 def _tex_a_texto(etiqueta):
-    """Convierte la etiqueta TeX de matplotlib a texto plano legible."""
     t = etiqueta
     for viejo, nuevo in _TEX:
         t = t.replace(viejo, nuevo)
@@ -293,7 +283,6 @@ _SWATCH = {
 
 
 def _mostrar_leyenda(entradas):
-    """Dibuja la leyenda como chips debajo del plot, dentro de la app."""
     if not entradas:
         return
     chips = "".join(
@@ -309,7 +298,6 @@ def _mostrar_leyenda(entradas):
 
 
 def _aplicar_grilla(fig, prender):
-    """Prende o apaga la grilla en todos los ejes de datos de la figura."""
     for ax in fig.get_axes():
         if ax.get_label() == '<colorbar>':
             continue
@@ -320,14 +308,6 @@ _GAMMAS = {"lineal": 1.0, "medio": 0.5, "alto": 0.3}
 
 
 def _aplicar_realce(fig, modo):
-    """Comprime la escala de color con una potencia (gamma), sin recalcular nada.
-
-    El mapa de phase matching es una sinc^2: el lobulo principal se lleva todo el
-    rango y los lobulos laterales -que son la estructura interesante- quedan por
-    debajo del 1% del maximo y no se distinguen del fondo. gamma < 1 los levanta.
-    Es SOLO la escala de color: los datos no cambian y el colorbar queda con los
-    ticks no equiespaciados, que es lo que avisa que la escala no es lineal.
-    """
     gamma = _GAMMAS.get(modo, 1.0)
     for ax in fig.get_axes():
         if ax.get_label() == '<colorbar>':
@@ -343,12 +323,6 @@ def _aplicar_realce(fig, modo):
 
 
 def _unificar_escala(fig_a, fig_b):
-    """Deja los dos figs con los MISMOS límites de ejes (la unión de los dos).
-
-    Sin esto la comparación engaña: si entre una corrida y la otra el autoscale
-    cambia el rango, dos curvas iguales se ven distintas. Se usa la unión y no
-    los límites del anterior para no recortar al nuevo.
-    """
     ejes_a = [ax for ax in fig_a.get_axes() if ax.get_label() != '<colorbar>']
     ejes_b = [ax for ax in fig_b.get_axes() if ax.get_label() != '<colorbar>']
     if len(ejes_a) != len(ejes_b):
@@ -362,7 +336,6 @@ def _unificar_escala(fig_a, fig_b):
 
 
 def _texto_parametros(raw):
-    """Los parámetros de una corrida, en una línea, para rotular la comparación."""
     partes = []
     for nombre, valor in raw.items():
         d = PARAM_DEFS.get(nombre, {})
@@ -386,7 +359,6 @@ _POR_COLOR = {
 
 
 def _color_de(artista):
-    """Color del artista en hex, o None si no tiene uno solo."""
     for metodo in ('get_color', 'get_facecolor', 'get_edgecolor'):
         try:
             valor = getattr(artista, metodo)()
@@ -406,18 +378,6 @@ def _color_de(artista):
 
 
 def _datos_de_figura(fig):
-    """Extrae los datos dibujados como filas (serie, x, y).
-
-    Cada tipo de figura dibuja con un artista distinto y hay que cubrirlos todos:
-    curvas (Line2D), scatter (collections), histogramas (barras o el polígono de
-    histtype='step') y mapas 2D (imágenes). Las series sin etiqueta propia se
-    numeran, porque varias figuras dibujan sin leyenda.
-
-    Formato largo (una fila por punto) y no una columna por serie, porque las
-    series no comparten la grilla de x: el signal y el idler salen de barridos
-    distintos. Así se filtra por `serie` sin inventar interpolaciones. En los
-    mapas 2D la tercera columna es el valor del pixel.
-    """
     filas = []
     ejes = [ax for ax in fig.get_axes() if ax.get_label() != '<colorbar>']
 
@@ -521,7 +481,6 @@ def _datos_de_figura(fig):
 
 
 def _csv_de_figura(fig, titulo, texto_params, ejes):
-    """CSV con una cabecera comentada que dice qué es y con qué parámetros."""
     filas = _datos_de_figura(fig)
     if not filas:
         return None
@@ -556,11 +515,6 @@ def _figura_a_bytes(fig, formato):
 
 
 def _coincide(valor, esperado):
-    """Compara con una condición de `solo_si`/`params_opcionales`.
-
-    El esperado puede ser un valor o una lista de valores aceptados: la óptica,
-    por ejemplo, hace falta tanto para la cámara como para el detector.
-    """
     if isinstance(esperado, (list, tuple)):
         return valor in esperado
     return valor == esperado

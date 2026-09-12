@@ -1,11 +1,3 @@
-"""Plots de Inverse Transform Sampling para el catalogo de la app.
-
-Cada funcion replica una celda de los scripts de exploracion:
-  plot_its_pares_2d_single, plot_its_angular_1d, plot_its_fotones_cartesianas
-      <- exploracion/phasematching_2d_its.py
-  plot_its_barrido_espectral
-      <- exploracion/phasematching_its_espectral.py
-"""
 import os as _os, sys as _sys
 _APP = _os.path.join(_os.getcwd(), 'app')
 for _p in (_APP, _os.getcwd()):
@@ -20,8 +12,6 @@ from estilo import (SIGNAL_COLOR, IDLER_COLOR,
 
 
 def _mapa_2d(cut, lp, ls, phi_s, w, L, puntos, theta_min_deg, theta_max_deg, tipo='II'):
-    """Computa el mapa 2D de phase matching en la grilla fija
-    [theta_min_deg, theta_max_deg] (en grados) con puntos x puntos."""
     puntos = int(puntos)
     theta_s = np.linspace(theta_min_deg * np.pi / 180,
                           theta_max_deg * np.pi / 180, puntos)
@@ -40,8 +30,6 @@ def _mapa_2d(cut, lp, ls, phi_s, w, L, puntos, theta_min_deg, theta_max_deg, tip
 def plot_its_pares_2d_single(cut, lp, ls, phi_s, w, L,
                               puntos=300, N_pares=50000,
                               theta_min_deg=0.0, theta_max_deg=2.0, tipo='II'):
-    """Mapa analítico de phase matching vs histograma 2D de pares ITS
-    para una configuración (ls, phi_s)."""
     N_pares = int(N_pares)
     DELTA, Ts_deg, Ti_deg = _mapa_2d(cut, lp, ls, phi_s, w, L,
                                        puntos, theta_min_deg, theta_max_deg, tipo)
@@ -77,7 +65,6 @@ def plot_its_pares_2d_single(cut, lp, ls, phi_s, w, L,
 def plot_its_angular_1d(cut, lp, ls, phi_s, w, L,
                          puntos=300, N_pares=50000,
                          theta_min_deg=0.0, theta_max_deg=2.0, tipo='II'):
-    """Histograma 1D de theta_s y -theta_i."""
     N_pares = int(N_pares)
     DELTA, Ts_deg, Ti_deg = _mapa_2d(cut, lp, ls, phi_s, w, L,
                                        puntos, theta_min_deg, theta_max_deg, tipo)
@@ -98,8 +85,6 @@ def plot_its_angular_1d(cut, lp, ls, phi_s, w, L,
 def plot_its_fotones_cartesianas(cut, lp, ls, phi_s, w, L,
                                    puntos=300, N_pares=50000,
                                    theta_min_deg=0.0, theta_max_deg=2.0, tipo='II'):
-    """Scatter de fotones en (theta_x, theta_y) coloreado por cuentas del
-    pixel del que vienen. Signal en phi_s, idler en phi_s + pi."""
     N_pares = int(N_pares)
     DELTA, Ts_deg, Ti_deg = _mapa_2d(cut, lp, ls, phi_s, w, L,
                                        puntos, theta_min_deg, theta_max_deg, tipo)
@@ -142,8 +127,6 @@ def plot_its_barrido_espectral(cut, lp, phi_s, w, L,
                                  puntos=300, N_pares=1000,
                                  theta_min_deg=0.0, theta_max_deg=2.0,
                                  progress_callback=None, tipo='II'):
-    """Histograma 1D de theta_s y -theta_i acumulado sobre un barrido en ls,
-    coloreado por longitud de onda. Igual que phasematching_its_espectral.py."""
     N_lambdas = int(N_lambdas)
     N_pares = int(N_pares)
     puntos = int(puntos)

@@ -12,8 +12,6 @@ import matplotlib.pyplot as plt
 
 
 def plot_sellmeier(pasos=200):
-    """n_o y n_e del BBO en función de la longitud de onda. Retorna fig.
-    2 D Plot, n x , n y , n z = f (lambda Pump)"""
     ls_1 = np.linspace(400e-9, 1200e-9, pasos)
     n_o, n_e = bboind(ls_1)
 
@@ -36,7 +34,6 @@ def plot_sellmeier(pasos=200):
 
 
 def plot_theta_vs_wavelength(cut, lp, phi_s, w, L, pasos=50, tipo='II'):
-    """Ángulos de emisión signal/idler vs longitud de onda del signal. Retorna fig."""
     pasos_l = pasos
     rango_ls = np.linspace(780e-9, 820e-9, pasos_l)
 

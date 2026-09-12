@@ -20,7 +20,6 @@ from estilo import SIGNAL_COLOR, IDLER_COLOR
 
 
 def plot_anillos_polar(cut, lp, ls, w, L, pasos=200, tipo='II'):
-    """Anillos SPDC Tipo II en coordenadas polares. Retorna fig."""
     rango_phis, ths_polar, thi_polar = calcular_anillos(cut, lp, ls, w, L, pasos, tipo=tipo)
 
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'}, figsize=(7, 7))
@@ -41,11 +40,6 @@ def plot_anillos_polar(cut, lp, ls, w, L, pasos=200, tipo='II'):
 
 
 def plot_anillos_cartesianas(cut, lp, ls, w, L, pasos=200, tipo='II'):
-    """Anillos SPDC en coordenadas cartesianas (theta_x, theta_y). Retorna fig.
-
-    En tipo I signal e idler son los dos ordinarios, así que en degeneración caen
-    EXACTAMENTE sobre el mismo círculo: el idler se dibuja punteado para que se
-    vean los dos."""
     rango_phis, ths_polar, thi_polar = calcular_anillos(cut, lp, ls, w, L, pasos,
                                                         tipo=tipo)
 
@@ -91,28 +85,6 @@ def plot_anillos(cut, lp, ls, w, L, pasos=200, tipo='II',
                  donde='fuera del cristal', proyeccion='ángulos (grados)',
                  optica='con lente de Fourier', f_lente=0.15, d_camara=0.15,
                  pixel_size=15e-6):
-    """Anillos de signal e idler vistos de frente, en todas las configuraciones.
-
-    `donde`      'dentro del cristal' usa los ángulos internos; 'fuera del cristal'
-                 los refracta a aire por Snell (lo que sale al laboratorio).
-    `proyeccion` qué se dibuja una vez afuera:
-                 - 'ángulos (grados)': (theta_x, theta_y), sin sensor de por medio.
-                 - 'cámara (píxeles)': el radio sobre el sensor dividido el tamaño
-                   de píxel.
-                 - 'detector (mm)': el mismo radio, en milímetros. Sirve para un
-                   sensor sin píxeles, o para saber qué tamaño de sensor hace falta.
-    `optica`     cómo llega la luz al sensor:
-                 - 'con lente de Fourier', el cristal en el foco: r = f·theta, y no
-                   depende de la distancia a la cámara. APROXIMACION PARAXIAL, la
-                   misma de proyectar_a_camara.
-                 - 'sin lente (a distancia D)': r = D·tan(theta), exacto para una
-                   fuente puntual, y proporcional a D.
-                 APROXIMACION en los dos casos: los pares se toman naciendo en un
-                 punto, no repartidos a lo largo de los L del cristal, así que el
-                 anillo sale sin ese borroneo.
-
-    Dentro del cristal no hay sensor, así que ahí `proyeccion` y `optica` se ignoran.
-    """
     dentro = donde.startswith('dentro')
     if dentro:
         rango_phis, ths, thi = calcular_anillos(cut, lp, ls, w, L, pasos, tipo=tipo)
@@ -231,7 +203,6 @@ def plot_anillos_cartesianas_comparacion(cut, lp, ls1, ls2, w, L, pasos=200, tip
 
 
 def plot_anillos_polar_fuera(cut, lp, ls, w, L, pasos=200, tipo='II'):
-    """Anillos SPDC Tipo II en polar con los ángulos refractados a aire. Retorna fig."""
     rango_phis, ths_fuera, thi_fuera = calcular_anillos_fuera(cut, lp, ls, w, L, pasos,
                                                               tipo=tipo)
 
@@ -254,11 +225,6 @@ def plot_anillos_polar_fuera(cut, lp, ls, w, L, pasos=200, tipo='II'):
 
 
 def plot_anillos_camara(cut, lp, ls, w, L, delta_theta, pasos=200, tipo='II'):
-    """Anillos SPDC proyectados sobre la cámara, en pixeles.
-
-    Usa los ángulos fuera del cristal (refractados por Snell) y los proyecta
-    asumiendo el cristal a la distancia focal de la lente.
-    delta_theta = tamaño_pixel / distancia_focal (rad/pixel)."""
     rango_phis, ths_fuera, thi_fuera = calcular_anillos_fuera(cut, lp, ls, w, L, pasos,
                                                               tipo=tipo)
 
@@ -292,8 +258,6 @@ def plot_anillos_camara(cut, lp, ls, w, L, delta_theta, pasos=200, tipo='II'):
 
 
 def plot_anillos_cartesianas_fuera(cut, lp, ls, w, L, pasos=200, tipo='II'):
-    """Anillos SPDC Tipo II en cartesianas (theta_x, theta_y) con los
-    ángulos refractados a aire. Retorna fig."""
     rango_phis, ths_fuera, thi_fuera = calcular_anillos_fuera(cut, lp, ls, w, L, pasos,
                                                               tipo=tipo)
 

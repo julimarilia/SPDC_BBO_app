@@ -1,22 +1,14 @@
-"""Nucleo de fisica: Sellmeier del BBO, phase matching tipo II e ITS.
-
-Convencion tipo II usada en todo el repo: el pump y el signal toman el indice
-FAST (extraordinario; el BBO es uniaxial negativo) y el idler el SLOW
-(ordinario).
-"""
 import numpy as np
 from scipy.optimize import minimize, brentq
 import matplotlib.pyplot as plt
 
 def bboind(lamb):
-    """Sellmeier del BBO (uniaxial negativo). `lamb` en metros -> (n_o, n_e)."""
     l_um = lamb * 1e6
     n_o = np.sqrt(2.7359 + 0.01878 / (l_um**2 - 0.01822) - 0.01354 * l_um**2)
     n_e = np.sqrt(2.3753 + 0.01224 / (l_um**2 - 0.01667) - 0.01516 * l_um**2)
     return n_o, n_e
 
 def get_indices(s_crystal, n_o, n_e):
-    """Indices fast/slow de la elipsoide para la direccion `s_crystal`."""
     sx, sy, sz = s_crystal
     B = sx**2 * (1/n_o**2 + 1/n_e**2) + sy**2 * (1/n_o**2 + 1/n_e**2) + sz**2 * (2/n_o**2)
     C = sx**2 / (n_o**2 * n_e**2) + sy**2 / (n_o**2 * n_e**2) + sz**2 / (n_o**4)
@@ -151,11 +143,6 @@ def calcular_Phi_NIST(theta_s, theta_i, cut, lp, ls, phi_s, W, L, tipo='II'):
 
 
 def phasematch_T2_lorentziana(x, cut, lp, ls, phi_s, W, L, tipo='II'):
-    """Error de phase matching tipo II con envolvente LORENTZIANA.
-
-    Aproximacion: reemplaza el sinc^2 por una lorentziana, que no tiene lobulos
-    secundarios donde el minimizador se pueda quedar atrapado.
-    """
     theta_s, theta_i = x
     theta_p = cut * np.pi / 180
     phi_p = 0.0
@@ -196,7 +183,6 @@ def phasematch_T2_lorentziana(x, cut, lp, ls, phi_s, W, L, tipo='II'):
     return np.real(delta)
 
 def calcular_thetas_fuera(theta_s, theta_i, cut, lp, ls, phi_s, tipo='II'):
-    """Refracta a aire por Snell los angulos internos (rad) -> externos (rad)."""
     theta_p = cut * np.pi / 180
     phi_p = 0.0
 
@@ -222,22 +208,11 @@ def calcular_thetas_fuera(theta_s, theta_i, cut, lp, ls, phi_s, tipo='II'):
     return theta_s_out, theta_i_out
 
 def proyectar_a_camara(theta_rad, phi, delta_theta):
-    """Proyecta un ángulo (theta, phi) a coordenadas de pixel sobre la cámara.
-
-    delta_theta = tamano_pixel / distancia_focal (rad/pixel).
-    APROXIMACION PARAXIAL: la posicion sobre la camara se toma como f*theta.
-    Retorna (x_px, y_px)."""
     r_px = theta_rad / delta_theta
     return r_px * np.cos(phi), r_px * np.sin(phi)
 
 
 def incl_externa_a_interna(incl, lp, cut):
-    """Convierte la inclinación EXTERNA del cristal `incl` (grados, ángulo entre
-    el pump y la normal de las caras) a la inclinación INTERNA del pump
-    refractado respecto de la normal (radianes), vía Snell en la cara de entrada.
-
-    APROXIMACION: el indice del pump se evalua al angulo de corte; la correccion
-    es de segundo orden para inclinaciones chicas. incl=0 devuelve 0.0."""
     if incl == 0.0:
         return 0.0
     n_o, n_e = bboind(lp)
@@ -247,14 +222,6 @@ def incl_externa_a_interna(incl, lp, cut):
 
 
 def _snell_vectorial(d_in, n1, n2, n_hat):
-    """Ley de Snell vectorial. Refracta el rayo unitario `d_in` (dirección de
-    propagación, hacia la interfaz) del medio n1 al n2 a través de una interfaz
-    con normal unitaria `n_hat` (apuntando hacia el medio de salida, del mismo
-    lado que la propagación). Retorna el rayo refractado unitario, o None si hay
-    reflexión total interna.
-
-    La componente tangencial escala por n1/n2 y la normal se recompone con
-    cos(theta_t). Con n_hat = z reproduce la cara perpendicular."""
     d_in = d_in / np.linalg.norm(d_in)
     n_hat = n_hat / np.linalg.norm(n_hat)
     eta = n1 / n2
@@ -267,13 +234,6 @@ def _snell_vectorial(d_in, n1, n2, n_hat):
 
 
 def indices_signal_idler(theta_s, theta_i, cut, lp, ls, phi_s, incl=0.0, tipo='II'):
-    """Índices de refracción que ven signal (fast/extraordinario) e idler
-    (slow/ordinario) dentro del cristal, para las direcciones internas dadas
-    (theta_s, theta_i en radianes, medidos desde el pump interno).
-
-    `incl` (grados, inclinación externa del cristal) corre el ángulo del eje
-    óptico respecto del pump. Misma lógica de índices que calcular_thetas_fuera.
-    Retorna (n_signal, n_idler)."""
     theta_p = cut * np.pi / 180 + incl_externa_a_interna(incl, lp, cut)
     phi_p = 0.0
 
@@ -296,18 +256,6 @@ def indices_signal_idler(theta_s, theta_i, cut, lp, ls, phi_s, incl=0.0, tipo='I
 
 
 def refractar_salida_dir(theta, phi, n_cristal, incl_int=0.0, phi_incl=0.0):
-    """Refracta al aire un rayo interno (theta, phi) — ángulos respecto del pump
-    interno z — al cruzar la cara de SALIDA del cristal, cuya normal está
-    inclinada `incl_int` (radianes) respecto de z, en el plano azimutal
-    `phi_incl`.
-
-    A diferencia de calcular_thetas_fuera (que asume la cara perpendicular al
-    pump), acá la cara está inclinada, así que la refracción cambia el ángulo
-    polar Y el azimut: por eso devolvemos las coordenadas angulares transversales
-    externas (theta_x, theta_y) en radianes, con theta_x = atan2(dx, dz). Esto es
-    lo que captura el corrimiento/deformación del patrón sobre el sensor.
-    Con incl_int=0 se reduce a la cara perpendicular (azimut preservado).
-    Retorna (nan, nan) si hay reflexión total interna."""
     n_aire = 1.000293
     d_in = np.array([np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)])
     n_hat = np.array([np.sin(incl_int)*np.cos(phi_incl), np.sin(incl_int)*np.sin(phi_incl), np.cos(incl_int)])
@@ -326,18 +274,7 @@ def calcular_fwhm(x_array, y_array):
 
 def generar_pares_its_pico(cut, lp, ls, phi_s, w, L,
                             ventana=1 * np.pi / 180, puntos=150, N_pares=500,
-                            x0=None, tipo='II'):
-    """Busca el pico de phase matching para (ls, phi_s), construye el mapa 2D
-    centrado en él y muestrea N_pares por Inverse Transform Sampling.
-
-    Estrategia: minimiza desde x0 (warm-start). Si no converge bien, hace un
-    grid search grueso sobre (theta_s, theta_i) ∈ (0, 5°] para localizar el
-    lóbulo principal y re-minimiza desde ahí. Esto cubre regímenes donde el
-    cono está lejos del initial guess.
-
-    Retorna dict con ts_samples, ti_samples (grados), DELTA, Ts_deg, Ti_deg,
-    ts_peak, ti_peak (radianes). Retorna None si el mapa generado es
-    prácticamente nulo (no hay phase matching real para esos parámetros)."""
+                            x0=None, tipo='II', tope_respaldo=5.0):
     if x0 is None:
         x0 = np.array([1.0, 1.0]) * np.pi / 180
     bnds = ((1e-9, 0.5), (1e-9, 0.5))
@@ -348,7 +285,8 @@ def generar_pares_its_pico(cut, lp, ls, phi_s, w, L,
 
     if res.fun > 1e-6:
         N_grid = 25
-        theta_grid = np.linspace(0.05 * np.pi / 180, 5.0 * np.pi / 180, N_grid)
+        theta_grid = np.linspace(0.05 * np.pi / 180,
+                                 tope_respaldo * np.pi / 180, N_grid)
         Phi_grid = np.zeros((N_grid, N_grid))
         for qq in range(N_grid):
             for jj in range(N_grid):
@@ -394,20 +332,8 @@ def generar_pares_its_pico(cut, lp, ls, phi_s, w, L,
 
 def barrido_espectral_azimutal_its(cut, lp, lambdas_s, rango_phi_s, w, L,
                                     ventana=1 * np.pi / 180, puntos=150, N_pares=500,
-                                    progress_callback=None, tipo='II'):
-    """Barrido combinado en longitud de onda y phi_s. Para cada (ls, phi_s)
-    busca el pico, muestrea con ITS y proyecta los pares a cartesianas.
-
-    Warm-start sobre ls manteniendo phi_s fijo y también entre phi_s
-    consecutivos (el pico varía suavemente en ambas variables). Si el
-    warm-start no converge, generar_pares_its_pico hace grid search interno
-    para encontrar el lóbulo principal.
-
-    progress_callback(idx, total, mensaje): opcional, se llama al terminar cada
-    phi_s para reportar progreso (idx es 1-based).
-
-    Retorna dict con arrays concatenados: tx_s, ty_s, tx_i, ty_i, theta_s,
-    theta_i, lambda_s, lambda_i. Retorna None si ningún (ls, phi_s) convergió."""
+                                    progress_callback=None, tipo='II',
+                                    tope_respaldo=5.0):
     tx_s_all, ty_s_all = [], []
     tx_i_all, ty_i_all = [], []
     theta_s_all, theta_i_all = [], []
@@ -425,7 +351,8 @@ def barrido_espectral_azimutal_its(cut, lp, lambdas_s, rango_phi_s, w, L,
 
             resultado = generar_pares_its_pico(cut, lp, ls, phi_s, w, L,
                                                ventana=ventana, puntos=puntos,
-                                               N_pares=N_pares, x0=x0_ls, tipo=tipo)
+                                               N_pares=N_pares, x0=x0_ls, tipo=tipo,
+                                               tope_respaldo=tope_respaldo)
             if resultado is None:
                 x0_ls = x0_base.copy()
                 continue
@@ -466,14 +393,6 @@ def barrido_espectral_azimutal_its(cut, lp, lambdas_s, rango_phi_s, w, L,
 
 
 def onset_colineal(lp, tipo='II', cut_min=15.0, cut_max=70.0):
-    """Ángulo de corte al que el cono degenerado se cierra (phase matching colineal).
-
-    Por debajo de este corte NO hay phase matching y el minimizador no converge:
-    devuelve theta ~ 0 con residuo grande en vez de un anillo. A 405 nm da 41.79°
-    en tipo II y 28.82° en tipo I.
-
-    Devuelve None si no hay cruce en [cut_min, cut_max].
-    """
     ls = 2 * lp
     s_lab = np.array([0.0, 0.0, 1.0])
 
@@ -491,8 +410,6 @@ def onset_colineal(lp, tipo='II', cut_min=15.0, cut_max=70.0):
 
 
 def residuo_phase_matching(cut, lp, ls, phi_s, w, L, tipo='II'):
-    """Residuo del minimizador para (cut, lp, ls, phi_s). Chequeo barato de si
-    existe cono: ~1e-17 cuando hay solución, >> 1e-6 cuando no."""
     bnds = ((1e-9, 0.5), (1e-9, 0.5))
     x0 = np.array([1.0, 1.0]) * np.pi / 180
     res = minimize(phasematch_NIST_T2_robusto, x0,
@@ -507,13 +424,6 @@ def residuo_phase_matching(cut, lp, ls, phi_s, w, L, tipo='II'):
 
 
 def its_2d(DELTA, Ts_deg, Ti_deg, N_pares, seed=None):
-    """Inverse Transform Sampling sobre un mapa 2D de phase matching.
-    Aplana el mapa en una distribución 1D de píxeles y muestrea con ITS.
-
-    seed: si se pasa un int, se reseedea el RNG global para que el muestreo sea
-    reproducible. Si es None (default), se usa el estado actual del RNG y cada
-    llamada produce muestras distintas (necesario para barridos con M
-    realizaciones independientes)."""
 
     pdf = DELTA.ravel() / np.sum(DELTA)
 
@@ -533,13 +443,6 @@ def its_2d(DELTA, Ts_deg, Ti_deg, N_pares, seed=None):
 
 
 def samplear_y_refractar(DELTA, Ts_deg, Ti_deg, N_pares, cut, lp, ls, phi_s, tipo='II'):
-    """Muestrea N_pares por ITS sobre el mapa de phase matching DELTA y refracta
-    los ángulos a aire vía Snell (calcular_thetas_fuera).
-
-    Encapsula el patrón "muestrear con its_2d y pasar cada par por la ley de
-    Snell", que antes estaba copiado en los scripts de correlaciones. Devuelve
-    (ts_ext, ti_ext) en grados: los ángulos tal como se medirían fuera del
-    cristal."""
     ts_int, ti_int, _, _ = its_2d(DELTA, Ts_deg, Ti_deg, N_pares)
     ts_ext = np.zeros_like(ts_int)
     ti_ext = np.zeros_like(ti_int)
@@ -553,10 +456,6 @@ def samplear_y_refractar(DELTA, Ts_deg, Ti_deg, N_pares, cut, lp, ls, phi_s, tip
 
 
 def calcular_anillos(cut, lp, ls, w, L, pasos=200, incl=0.0, tipo='II'):
-    """Calcula los ángulos polares de signal e idler para un barrido en phi_s.
-    Retorna (rango_phis, ths_polar, thi_polar).
-    `incl` (grados, inclinación externa del cristal) corre el phase-matching;
-    incl=0 es el cristal perpendicular al pump (comportamiento original)."""
     rango_phis = np.linspace(0, 2*np.pi, pasos)
 
     ths_polar = np.full(pasos, np.nan)
@@ -580,9 +479,6 @@ def calcular_anillos(cut, lp, ls, w, L, pasos=200, incl=0.0, tipo='II'):
     return rango_phis, ths_polar, thi_polar
 
 def calcular_anillos_fuera(cut, lp, ls, w, L, pasos=200, tipo='II'):
-    """Como calcular_anillos pero refracta los ángulos a aire vía Snell.
-    Útil para comparar con lo que mediríamos en el laboratorio.
-    Retorna (rango_phis, ths_fuera, thi_fuera) con los ángulos en grados."""
     rango_phis, ths_polar, thi_polar = calcular_anillos(cut, lp, ls, w, L, pasos, tipo=tipo)
 
     ths_fuera = np.full(len(ths_polar), np.nan)
@@ -597,21 +493,6 @@ def calcular_anillos_fuera(cut, lp, ls, w, L, pasos=200, tipo='II'):
     return rango_phis, ths_fuera, thi_fuera
 
 def calcular_anillos_camara(cut, lp, ls, w, L, delta_theta, incl=0.0, pasos=200, tipo='II'):
-    """Anillos SPDC proyectados a pixeles sobre la cámara, contemplando la
-    inclinación `incl` del cristal (grados, ángulo externo entre el pump y la
-    normal de las caras del cristal).
-
-    incl != 0 hace dos cosas:
-      1) corre el ángulo de phase-matching pump–eje óptico (cambia apertura y
-         asimetría del cono): ya entra vía calcular_anillos(..., incl).
-      2) refracta signal e idler en la cara de SALIDA inclinada (Snell vectorial,
-         refractar_salida_dir), lo que desplaza/deforma el patrón sobre el sensor
-         respecto del pump.
-    El origen del plot es el eje óptico del setup: por ser el cristal una lámina
-    de caras paralelas, el pump sale paralelo al haz incidente y cae sobre el eje,
-    así que se resta esa posición. incl=0 reproduce exactamente la proyección con
-    la cara perpendicular (mismo camino que plot_anillos_camara).
-    Retorna (xs, ys, xi, yi) en pixeles."""
     if incl == 0.0:
         rango_phis, ths_fuera, thi_fuera = calcular_anillos_fuera(cut, lp, ls, w, L,
                                                                   pasos, tipo=tipo)
