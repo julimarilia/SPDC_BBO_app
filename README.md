@@ -133,7 +133,7 @@ graficos/             el cómputo de cada figura
   its.py                muestreo por Inverse Transform Sampling
 ```
 
-**El corazón es `fisica.py`.** Dada una dirección de emisión calcula el desajuste de
+** `fisica.py`.** Dada una dirección de emisión calcula el desajuste de
 fase `Δk = k_p − k_s − k_i`: arma los versores de propagación, rota al marco del
 cristal, saca los índices por Sellmeier, resuelve la ecuación de Fresnel de las
 normales de onda y compone los tres vectores de onda. La función de phase matching es
@@ -167,12 +167,10 @@ agregale un argumento `tipo='II'`. El cómputo va en `graficos/`, no en `registr
 
 ---
 
-## Contexto
+## Aclaración
 
 Este simulador es parte de una tesis de licenciatura en Física (FCEyN, UBA) sobre
 generación de pares de fotones por SPDC tipo II en BBO y su detección con una
 **Skipper-CCD**, hecha entre el Laboratorio de Óptica Cuántica del DEILAP (CITEDEF) y
 el LAMBDA (Departamento de Física, FCEyN–UBA).
 
-Se publica por separado porque la simulación se sostiene sola: sirve para diseñar o
-entender una fuente de pares por SPDC en BBO sin nada del resto del trabajo.
