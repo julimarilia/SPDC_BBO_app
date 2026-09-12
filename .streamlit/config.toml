@@ -1,0 +1,7 @@
+[theme]
+# Off-white en vez de blanco puro: los plots dejan de "flotar" sobre la UI.
+base = "light"
+backgroundColor = "#FAFAFA"
+secondaryBackgroundColor = "#F0EFEB"
+textColor = "#1E1E1E"
+primaryColor = "#d62728"

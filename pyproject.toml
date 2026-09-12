@@ -1,0 +1,12 @@
+[project]
+name = "spdc-bbo-app"
+version = "1.0.0"
+description = "Simulador de phase matching de SPDC en BBO"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "scipy>=1.11",
+    "streamlit>=1.40",
+]
