@@ -23,7 +23,7 @@ Hace falta **Python 3.11 o más nuevo**. Cualquiera de los dos caminos sirve.
 a mano.
 
 ```bash
-git clone https://github.com/<usuario>/SPDC_BBO_app.git
+git clone https://github.com/julimarilia/SPDC_BBO_app.git
 cd SPDC_BBO_app
 uv run streamlit run app.py
 ```
@@ -33,7 +33,7 @@ La primera vez baja las dependencias; después arranca en segundos.
 ### Con `pip`
 
 ```bash
-git clone https://github.com/<usuario>/SPDC_BBO_app.git
+git clone https://github.com/julimarilia/SPDC_BBO_app.git
 cd SPDC_BBO_app
 
 python -m venv .venv
